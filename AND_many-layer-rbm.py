@@ -5,9 +5,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 from sklearn.utils import shuffle
 
-
-
-
+from preprocessing_MNIST import PreMnist
 
 class RBM(object):
     def __init__(self, D, M, an_id):
@@ -158,7 +156,7 @@ class DNN(object):
         N = len(X)
 
         
-        pretrain_epochs = 10000
+        pretrain_epochs = 1000
         if not pretrain:
             pretrain_epochs = 0
 
@@ -206,7 +204,6 @@ class DNN(object):
 
 
 
-
 def all_parity_pairs(nbit):
     # total number of samples (Ntotal) will be a multiple of 100
     # why did I make it this way? I don't remember.
@@ -226,10 +223,10 @@ def all_parity_pairs(nbit):
     return X, Y
 
 
-
+'''
 def test_single_RBM(Xtrain):
     
-    Xtrain = Xtrain.astype(np.float32)
+    Xtrain = Xtrain.astype(np.float32)fit
     _, D = Xtrain.shape
     rbm = RBM(D, 1, 0)
     init_op = tf.global_variables_initializer()
@@ -238,28 +235,25 @@ def test_single_RBM(Xtrain):
         rbm.set_session(session)
         rbm.fit(Xtrain, show_fig=True)
         print(session.run(rbm.W))
-
+'''
 
 def main():
-    T, F = 1.0, 0.0 
-    training_input = [
-        [T, T, T],
-        [T, F, F],
-        [F, T, F],
-        [F, F, F],
-    ]
-    training_input = np.array(training_input)
-    #test_single_RBM(training_input)
 
-    Xtrain = training_input.astype(np.float32)
-    #Xtest = Xtest.astype(np.float32)
-    _, D = Xtrain.shape
-    dnn = DNN(D, [3, 3, 3], UnsupervisedModel=RBM)
+    preprocMnist = PreMnist()
+    
+    PreMnist().ET(1, 3)
+
+    batch, labels = PreMnist().ET(1, 100)
+
+    print(batch.shape)
+
+    dnn = DNN(batch[1].size, [batch[1].size, batch[1].size, batch[1].size], UnsupervisedModel=RBM)
     init_op = tf.global_variables_initializer()
     with tf.Session() as session:
         session.run(init_op)
         dnn.set_session(session)
-        dnn.fit(Xtrain, pretrain=True, epochs=10)
+        #dnn.fit(Xtrain, pretrain=True, epochs=10)
+        dnn.fit(batch, 1, 1)
         W = []
         for e in dnn.hidden_layers:
             W.append(session.run(e.W))
@@ -274,7 +268,7 @@ def main():
     print('--------------------')
     print(W)
     np.save('rbm_weights', W)
-    
+
 if __name__ == '__main__':
     main()
 
