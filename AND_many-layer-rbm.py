@@ -64,19 +64,21 @@ class RBM(object):
             )
         )
 
-    def fit(self, X, epochs=10, batch_sz=1, show_fig=False):
+    def fit(self, X, epochs=10, batch_sz=1, show_fig=False, show_print=True):
         N, D = X.shape
         n_batches = N // batch_sz
 
         costs = []
-        print("training rbm: %s" % self.id)
+        if show_print:
+          print("training rbm: %s" % self.id)
         for i in range(epochs):
-            print("epoch:", i)
+            if show_print:
+              print("epoch:", i)
             X = shuffle(X)
             for j in range(n_batches):
                 batch = X[j*batch_sz:(j*batch_sz + batch_sz)]
                 _, c = self.session.run((self.train_op, self.cost), feed_dict={self.X_in: batch})
-                if j % 10 == 0:
+                if j % 10 == 0 and show_print:
                     print("j / n_batches:", j, "/", n_batches, "cost:", c)
                 costs.append(c)
         if show_fig:
@@ -112,10 +114,12 @@ class RBM(object):
         # unlike forward_hidden and forward_output
         # which deal with tensorflow variables
         return self.session.run(self.p_h_given_v, feed_dict={self.X_in: X})
-
-
-
-
+    '''
+    def predict(self, X):
+        Z = self.forward_hidden(X)
+        output = self.forward_output(Z)
+        return self.session()
+    '''
 class DNN(object):
     def __init__(self, D, hidden_layer_sizes, K=0, UnsupervisedModel=RBM):
         self.hidden_layers = []
@@ -143,6 +147,7 @@ class DNN(object):
         self.Y = labels
         logits = self.forward(self.X)
 
+        # accepts and returns a real 
         self.cost = tf.reduce_mean(
             tf.nn.sparse_softmax_cross_entropy_with_logits(
                 logits=logits,
@@ -152,17 +157,17 @@ class DNN(object):
         self.train_op = tf.train.AdamOptimizer(1e-2).minimize(self.cost)
         self.prediction = tf.argmax(logits, 1)
 
-    def fit(self, X, Y=0, Xtest=0, Ytest=0, pretrain=True, epochs=1, batch_sz=100):
+    def fit(self, X, Y=0, Xtest=0, Ytest=0, pretrain=True, epochs=1, batch_sz=10):
         N = len(X)
 
         
-        pretrain_epochs = 1000
+        pretrain_epochs = 10
         if not pretrain:
             pretrain_epochs = 0
 
         current_input = X
         for ae in self.hidden_layers:
-            ae.fit(current_input, epochs=pretrain_epochs)
+            ae.fit(current_input, epochs=pretrain_epochs, show_fig=False, show_print=False)
 
             # create current_input for the next layer
             current_input = ae.transform(current_input)
@@ -188,7 +193,16 @@ class DNN(object):
                 error = error_rate(p, Ytest)
                 if j % 10 == 0:
                     print("j / n_batches:", j, "/", n_batches, "cost:", c, "error:", error)
-                costs.append(c)
+                costs.append(c)   def forward_hidden(self, X):
+        return tf.nn.sigmoid(tf.matmul(X, self.W)) #+ self.c)
+
+    def forward_logits(self, X):
+        Z = self.forward_hidden(X)
+        return tf.matmul(Z, tf.transpose(self.W)) #+ self.b
+
+    def forward_output(self, X):
+        return tf.nn.sigmoid(self.forward_logits(X))
+
         plt.plot(costs)
         plt.show()
         '''
@@ -239,15 +253,11 @@ def test_single_RBM(Xtrain):
 
 def main():
 
-    preprocMnist = PreMnist()
-    
-    PreMnist().ET(1, 3)
+    batch, labels = PreMnist().ET(1, 10)
 
-    batch, labels = PreMnist().ET(1, 100)
+    size = batch[1].size
 
-    print(batch.shape)
-
-    dnn = DNN(batch[1].size, [batch[1].size, batch[1].size, batch[1].size], UnsupervisedModel=RBM)
+    dnn = DNN(size, [size, size, size, size, size], UnsupervisedModel=RBM)
     init_op = tf.global_variables_initializer()
     with tf.Session() as session:
         session.run(init_op)
@@ -268,6 +278,56 @@ def main():
     print('--------------------')
     print(W)
     np.save('rbm_weights', W)
+    
+
+
+    '''
+    b = batch[1]
+    print(type(b))
+    print(b.shape)
+    pr=PreMnist()
+    PreMnist.printSet(pr, b, b, 0)
+    
+   
+    
+    #a = np.array(b, dtype=np.float32 )   
+    
+    #print(a.shape)
+    #print(type(a[0]))      
+      
+      
+    Z = dnn.hidden_layers[0].forward_hidden(batch)
+    output = dnn.hidden_layers[0].forward_output(Z)
+    print(output)
+    print(output.shape)
+    print(output[0].shape)
+    
+    print("\n Array: \n")
+    sess = tf.InteractiveSession()
+    array = output[0].eval()    
+    
+    
+    PreMnist.printSet(pr, array, array, 0)   
+    ''' 
+    
+    #sess = tf.InteractiveSession()
+    #print(type(tf.constant(output[0]).eval()))    
+    
+    #print(Z)
+    #output = dnn.hidden_layers[0].forward_output(Z)
+    
+    #with tf.Session() as session:
+    #    session.run(init_op)
+    #    dnn.set_session(session)
+        
+    #    Z = dnn.hidden_layers[0].forward_hidden(a)
+    #    output = dnn.hidden_layers[0].forward_output(Z)        
+        
+        #asd = dnn.hidden_layers[0].transform(b.reshape(1, 794))
+    #    print(output)
+    #    print(output.shape)
+  
+    
 
 if __name__ == '__main__':
     main()

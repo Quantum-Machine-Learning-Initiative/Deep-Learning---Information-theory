@@ -9,7 +9,7 @@ class PreMnist:
      @param 1 is a Boolean: what set to load 1 -> Training; 0 -> Test
      @param 2 is an Integer: # elements
     '''
-    def ET(self, trainingFlag, batch_size):
+    def ET(self, trainingFlag, batch_size, printFlag=False):
     
       # Import data
       mnist = input_data.read_data_sets('./data_set', one_hot=True)
@@ -20,18 +20,20 @@ class PreMnist:
       
       ret = np.array([np.append(a, b) for(a, b) in zip(batch_xs, label)])
     
+      ret = ret.astype(np.float32)    
+    
       for im in range(0, images):
         for pix in range(0, pixels):
           if batch_xs[im, pix] > 0.5:
               ret[im, pix] = 1
           else:
               ret[im, pix] = 0
-        #if printFlag:      
-        #  printSet(batch_xs[im], ret[im])
+        if printFlag:      
+          self.printSet(batch_xs[im], ret[im])
     
       return ret, label
     
-    def printSet(image1, image2):
+    def printSet(self, image1, image2, delta=10):
         
         length = image1.size
         
@@ -45,8 +47,6 @@ class PreMnist:
                 print(np.around(image1[pix], decimals=1), end='')
             else: 
                 print("   ", end='')
-          
-        print("")
     
         print("second")
         for pix in range(0, length):
@@ -56,19 +56,17 @@ class PreMnist:
                 print(np.around(image2[pix],decimals=1), end='')    
             else: 
               print("   ", end='')
-        for p in range(10):
+        for p in range(delta):
           print(np.around(image2[p+length],decimals=1), end='')    
-          
-        print("")
 
-
+'''
 #we get the mnist batch as a parameter
 def main():
-  batch, labels = ET(1, 3, 1)
+  pr=PreMnist()
+  batch, labels = PreMnist.ET(pr, 1, 1, True)
 
-  print(batch, labels)
-
+  PreMnist.printSet(pr, batch[0], batch[0], 0)
 
 if __name__ == '__main__':
   main()
-
+'''
