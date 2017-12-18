@@ -35,27 +35,29 @@ class PreMnist:
     
     def printSet(self, image1, image2, delta=10):
         
-        length = image1.size
+        if image1 is not None:
+          length = image1.size
         
-        print(image1.shape)
+          print(image1.shape)
         
-        print("first")
-        for pix in range(0, length):
+          print("first")
+          for pix in range(0, length):
             if pix % 28 == 0:
-                print('\n')
+              print('\n')
             if image1[pix] > 0.5:    
-                print(np.around(image1[pix], decimals=1), end='')
-            else: 
-                print("   ", end='')
-    
-        print("second")
-        for pix in range(0, length):
-            if pix % 28 == 0:
-                print('\n')
-            if image2[pix] > 0:    
-                print(np.around(image2[pix],decimals=1), end='')    
+              print(np.around(image1[pix], decimals=1), end='')
             else: 
               print("   ", end='')
+    
+          print("second")
+          for pix in range(0, length):
+            if pix % 28 == 0:
+              print('\n')
+            if image2[pix] > 0:    
+              print(np.around(image2[pix],decimals=1), end='')    
+            else: 
+              print("   ", end='')
+        
         for p in range(delta):
           print(np.around(image2[p+length],decimals=1), end='')    
 

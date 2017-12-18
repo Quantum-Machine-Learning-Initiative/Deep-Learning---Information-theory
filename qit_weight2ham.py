@@ -19,8 +19,8 @@ e_0 = np.matrix([1,0]).T
 e_1 = np.matrix([0,1]).T
 
 
-
-
+size = ''
+epochs=''
 
 def CountSpins(W):
     N = 0 #Initialize number of spins
@@ -165,7 +165,7 @@ def plot_RelEnt(D_1_i, D_N_i, label):
     plt.xlabel('D(layer 0 || layer i)')  
     for i, txt in enumerate(label):
         ax2.annotate(txt, (D_1_i[i], D_N_i[i]))
-    plt.savefig('Info_D_plot_test_qit.pdf')
+    plt.savefig('Info_D_plot_test_qit_' + size + '_' + epochs + '.pdf')
     plt.close()
     
     plt.figure(1)
@@ -173,7 +173,7 @@ def plot_RelEnt(D_1_i, D_N_i, label):
     plt.ylabel('D(Layer 1 || layer i)')
     plt.xlabel('Layers (first to last)')
     plt.scatter(np.arange(len(D_1_i)).tolist(), D_1_i) 
-    plt.savefig('Rel_entropy_layer1_test_qit.pdf')
+    plt.savefig('Rel_entropy_layer1_test_qit_' + size + '_' + epochs + '.pdf')
     plt.close()
     
     plt.figure(2)
@@ -183,7 +183,7 @@ def plot_RelEnt(D_1_i, D_N_i, label):
     a = np.arange(len(D_N_i)).tolist()
     #a.reverse()
     plt.scatter(a, D_N_i) 
-    plt.savefig('Rel_entropy_layerN_test_qit.pdf')
+    plt.savefig('Rel_entropy_layerN_test_qit_' + size + '_' + epochs + '.pdf')
     plt.close()
 
 
@@ -199,7 +199,7 @@ def plot_MI(M_1_i, M_N_i, label):
     plt.xlabel('Mi(layer 0 , layer i)')  
     for i, txt in enumerate(label):
         ax1.annotate(txt, (M_1_i[i], M_N_i[i]))
-    plt.savefig('Info_MI_plot_test_qit.pdf')
+    plt.savefig('Info_MI_plot_test_qit_' + size + '_' + epochs + '.pdf')
     plt.close()
     
     plt.figure(3)
@@ -207,7 +207,7 @@ def plot_MI(M_1_i, M_N_i, label):
     plt.ylabel('Mi(Layer 1 || layer i)')
     plt.xlabel('Layers (first to last)')
     plt.scatter(np.arange(len(M_1_i)).tolist(), M_1_i) 
-    plt.savefig('MI_layer1_test_qit.pdf')
+    plt.savefig('MI_layer1_test_qit_' + size + '_' + epochs + '.pdf')
     plt.close()
     
     plt.figure(4)
@@ -217,13 +217,35 @@ def plot_MI(M_1_i, M_N_i, label):
     a = np.arange(len(M_N_i)).tolist()
     #a.reverse()
     plt.scatter(a, M_N_i) 
-    plt.savefig('MI_layerN_test_qit.pdf')
+    plt.savefig('MI_layerN_test_qit_' + size + '_' + epochs + '.pdf')
     plt.close()
              
     
    
 def main():
-    W = np.load('rbm_weights.npy')
+
+    if len(sys.argv)!=2:
+      print("Number of parameters wrong. Only the name of weights file needed.")
+      quit()
+
+    name_file = sys.argv[1]
+
+    print("Name file: " + name_file)
+
+    try:
+      W = np.load(name_file)#'rbm_weights.npy')
+    except IOError:
+      print("File: " + file_name + "does not exist or cannot be read") 
+      quit()
+    except ValueError:
+      print("File: " + file_name + "contains an object array, but allow_pickle=False given")
+      quit()
+
+    name_file_splitted = name_file.split("_")
+    
+    size = name_file_splitted[2]
+    epochs = name_file_splitted[3][:-4]
+
     #W = np.array([[[5,1], [0,1]], [[1,1], [1,1]]])
     #W = np.array([[[1,1], [1,1]]])
     equal_nodes = False ## True if all layers have same number of nodes. Important for relative entropy calculation

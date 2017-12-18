@@ -1,10 +1,13 @@
 from __future__ import print_function, division
-from builtins import range
+try:
+    from builtins import range
+except ImportError:
+    from __builtin__ import range
+import sys
 import numpy as np
-import tensorflow as tf
+import tensorflow as tfsys
 import matplotlib.pyplot as plt
 from sklearn.utils import shuffle
-
 from preprocessing_MNIST import PreMnist
 
 class RBM(object):
@@ -40,7 +43,7 @@ class RBM(object):
         H = tf.to_float(r < p_h_given_v)
 
         p_v_given_h = tf.nn.sigmoid(tf.matmul(H, tf.transpose(self.W))) #+ self.b)
-        # self.rng_v_given_h = tf.contrib.distributions.Bernoulli(
+        # self.rng_v_given_h = tf.contrib.distributions.Bsysernoulli(
         #     probs=p_v_given_h,
         #     dtype=tf.float32
         # )
@@ -64,7 +67,7 @@ class RBM(object):
             )
         )
 
-    def fit(self, X, epochs=10, batch_sz=1, show_fig=False, show_print=True):
+    def fit(self, X, epochs, batch_sz, show_fig, show_print):
         N, D = X.shape
         n_batches = N // batch_sz
 
@@ -74,12 +77,13 @@ class RBM(object):
         for i in range(epochs):
             if show_print:
               print("epoch:", i)
+              sys.stdout.flush()sys
             X = shuffle(X)
             for j in range(n_batches):
                 batch = X[j*batch_sz:(j*batch_sz + batch_sz)]
                 _, c = self.session.run((self.train_op, self.cost), feed_dict={self.X_in: batch})
-                if j % 10 == 0 and show_print:
-                    print("j / n_batches:", j, "/", n_batches, "cost:", c)
+                #if j % 10 == 0 and show_print:
+                #    print("j / n_batches:", j, "/", n_batches, "cost:", c)
                 costs.append(c)
         if show_fig:
             plt.plot(costs)
@@ -112,7 +116,7 @@ class RBM(object):
     def transform(self, X):
         # accepts and returns a real numpy array
         # unlike forward_hidden and forward_output
-        # which deal with tensorflow variables
+        # which deal with tensorflow variablessys
         return self.session.run(self.p_h_given_v, feed_dict={self.X_in: X})
     '''
     def predict(self, X):
@@ -157,24 +161,26 @@ class DNN(object):
         self.train_op = tf.train.AdamOptimizer(1e-2).minimize(self.cost)
         self.prediction = tf.argmax(logits, 1)
 
-    def fit(self, X, Y=0, Xtest=0, Ytest=0, pretrain=True, epochs=1, batch_sz=10):
+    #def fit(self, X, '''Y=0, Xtest=0, Ytest=0, pretrain=True''', epochs'''=1''', batch_sz'''=10''', show_print, showfig=false):
+    def fit(self, X, epochs, batch_sz, show_print, show_fig):
         N = len(X)
 
         
-        pretrain_epochs = 10
-        if not pretrain:
-            pretrain_epochs = 0
+        #pretrain_epochs = 10
+        #if not pretrain:
+        #    pretrain_epochs = 0
 
         current_input = X
         for ae in self.hidden_layers:
-            ae.fit(current_input, epochs=pretrain_epochs, show_fig=False, show_print=False)
+            ae.fit(current_input, epochs, 1,  show_fig, show_print)
 
             # create current_input for the next layer
             current_input = ae.transform(current_input)
 
-        n_batches = N // batch_sz
-        costs = []
         '''
+        n_batches = N // batch_sz        
+        costs = []
+        
         print("supervised training...")
         for i in range(epochs):
             print("epoch:", i)
@@ -182,7 +188,7 @@ class DNN(object):
             for j in range(n_batches):
                 Xbatch = X[j*batch_sz:(j*batch_sz + batch_sz)]
                 Ybatch = Y[j*batch_sz:(j*batch_sz + batch_sz)]
-                self.session.run(
+                self.session.run(sys
                     self.train_op,
                     feed_dict={self.X: Xbatch, self.Y: Ybatch}
                 )
@@ -253,7 +259,46 @@ def test_single_RBM(Xtrain):
 
 def main():
 
-    batch, labels = PreMnist().ET(1, 10)
+    batchSize = -1
+    epochs = -1
+
+    args = []
+
+    for arg in sys.argv[1:]:
+        args.append(arg)
+    
+    print("-------------------------------")
+    print("len: " + str(len(args)))    
+    for string in args:
+      print(string)
+    print("-------------------------------")
+        
+    for i, arg in enumerate(args, start=1):
+      print(arg)
+      if arg == "-size":
+        try:    
+          batchSize = int(args[i]) if i<len(args) and int(args[i])>0  else -1
+        except ValueError:
+            pass
+          
+      if arg == "-epochs":
+        try:
+          epochs = int(args[i]) if i<len(args) and int(args[i])>0  else -1
+        except ValueError:
+          pass
+          
+    if len(sys.argv)>1:
+        print("size: " + str(batchSize))
+        print("epochs: " + str(epochs))   
+        sys.stdout.flush()
+        if batchSize<0 or epochs<0:
+          quit()            
+       
+
+
+    batch, labels = PreMnist().ET(1, batchSize)
+
+    #PreMnist().printSet(batch[1], batch[1], 0)
 
     size = batch[1].size
 
@@ -263,7 +308,7 @@ def main():
         session.run(init_op)
         dnn.set_session(session)
         #dnn.fit(Xtrain, pretrain=True, epochs=10)
-        dnn.fit(batch, 1, 1)
+        dnn.fit(batch, epochs, size, True, False)
         W = []
         for e in dnn.hidden_layers:
             W.append(session.run(e.W))
@@ -276,8 +321,9 @@ def main():
         #print(w3)
     #W = [w1, w2, w3, w4]
     print('--------------------')
-    print(W)
-    np.save('rbm_weights', W)
+    ##print(W)
+    print('Complete learning \n Saving weights to file')
+    np.save('rbm_weights_size' + str(batchSize) + '_epochs' + str(epochs), W)
     
 
 
@@ -309,23 +355,6 @@ def main():
     
     PreMnist.printSet(pr, array, array, 0)   
     ''' 
-    
-    #sess = tf.InteractiveSession()
-    #print(type(tf.constant(output[0]).eval()))    
-    
-    #print(Z)
-    #output = dnn.hidden_layers[0].forward_output(Z)
-    
-    #with tf.Session() as session:
-    #    session.run(init_op)
-    #    dnn.set_session(session)
-        
-    #    Z = dnn.hidden_layers[0].forward_hidden(a)
-    #    output = dnn.hidden_layers[0].forward_output(Z)        
-        
-        #asd = dnn.hidden_layers[0].transform(b.reshape(1, 794))
-    #    print(output)
-    #    print(output.shape)
   
     
 

@@ -1,0 +1,24 @@
+
+#!/bin/bash
+#PBS -l nodes=1:ppn=2,walltime=01:00:00,gpus=2
+#PBS -N RBM-MNIST
+#PBS -q gpgpu
+
+module load cuDNN/5.1
+module load ScriptLang/python/2.7u3i
+
+cd "$PBS_0_WORDKDIR"
+cat $PBS_NODEFILE
+
+#the following launch the training 
+#python Quantum-Machine-Learning-Initiative/Deep-Learning---Information-theory/AND_many-layer-rbm.py -size 1000 -epochs 100
+
+#the following launch the statistics 
+python Quantum-Machine-Learning-Initiative/Deep-Learning---Information-theory/qit_weight2ham.py rbm_weights_size100_epochs100.npy
+
+
+
+
+
+
+
