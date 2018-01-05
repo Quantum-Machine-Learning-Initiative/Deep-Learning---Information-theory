@@ -294,7 +294,7 @@ def plot_ent(Density_per_layer):
     plt.savefig('entropy_per_layer_qit.pdf')
     plt.close()
 
-def generate_bernoulli(n, p):
+#def generate_bernoulli(n, p):
     
 
    
