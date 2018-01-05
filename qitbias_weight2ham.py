@@ -294,6 +294,9 @@ def plot_ent(Density_per_layer):
     plt.savefig('entropy_per_layer_qit.pdf')
     plt.close()
 
+def generate_bernoulli(n, p):
+    
+
    
 def main():
     W = np.load('rbm_weights.npy')
@@ -336,7 +339,7 @@ def main():
     #print(RelativeEntropy(Density_per_layer[1], Density_per_layer[-1]))}
     print('------------------------')
     print(MI_coord)
-    MI_coord[-2][1] = 15*MI_coord[-2][1] 
+    #MI_coord[-2][1] = 15*MI_coord[-2][1] 
     #print(RelativeEntropy(Density_per_layer[1], Density_per_layer[-1]))
     M_1_i = []
     M_N_i = []
